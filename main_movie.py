@@ -17,13 +17,13 @@ class LotteCinema(MovieTitleAndStartDate) :
 
     chrome_options = Options()
     chrome_options.add_experimental_option("mobileEmulation", mobile_emulation)
+
+    driver = webdriver.Chrome(options=chrome_options)
+    wait = WebDriverWait(driver, 3)
         
     def __init__(self, url, site) : 
 
         super().__init__(url, site)
-
-        self.driver = webdriver.Chrome(options=self.chrome_options)
-        self.wait = WebDriverWait(self.driver, 3)
         
         self.driver.get(url); time.sleep(3)
 
@@ -133,14 +133,43 @@ class LotteCinema(MovieTitleAndStartDate) :
     
 class MegaBox(MovieTitleAndStartDate) : 
 
+    chrome_options = Options()
+
+    driver = webdriver.Chrome(options=chrome_options)
+    wait = WebDriverWait(driver, 3)
+
+    def __init__(self, url, site) : 
+
+        super().__init__(url, site)
+        
+        self.driver.get(url); time.sleep(3)
+
+        self.event_list = self.wait.until(
+            EC.presence_of_element_located((By.CLASS_NAME, "event-list"))
+        )
+
+    def quit(self) : 
+        self.driver.quit()
+
     def _read_movie_title(self):
-        pass
+
+        titles = self.event_list.find_elements(By.CLASS_NAME, 'tit')
+
+        return [(title.text).split(']')[0].strip('[') for title in titles]
 
     def _read_start_date(self):
-        pass
+        
+        dates = self.event_list.find_elements(By.CLASS_NAME, 'date')
+
+        return [(date.text).split('~')[0].strip() for date in dates]
 
     def main(self) -> dict : 
-        pass
+        
+        movie_titles = self._read_movie_title()
+
+        start_dates = self._read_start_date()
+
+        return dict(zip(movie_titles, start_dates))
                 
 if __name__ == "__main__" :
     lottecinma = LotteCinema(url = "https://www.lottecinema.co.kr/NLCMW/Event/EventTemplateSpeedMulti?eventId=201210016922014", 
