@@ -9,24 +9,10 @@ from abc import ABC, abstractmethod
 import time
 
 class MovieTitleAndStartDate(ABC): 
-    
-    # Chrome 옵션 설정
-    mobile_emulation = {
-        "deviceName": "iPhone X"  # 원하는 기기 이름 (예: 'iPhone X', 'Pixel 2')
-    }
-
-    chrome_options = Options()
-    chrome_options.add_experimental_option("mobileEmulation", mobile_emulation)
-    
-    def __init__(self, url) : 
-        self.driver = webdriver.Chrome(options=self.chrome_options)
-        self.wait = WebDriverWait(self.driver, 3)
         
-        self.driver.get(url); time.sleep(3)
+    def __init__(self, site) : 
+        self.site_title = site
         
-    def quit(self) : 
-        self.driver.quit()
-    
     @abstractmethod
     def _read_movie_title(self) : 
         """
