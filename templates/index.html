@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>영화 상영 일정</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; padding: 20px; }
+        h1 { text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f4f4f4; }
+    </style>
+</head>
+<body>
+    <h1>🎬 롯데시네마 이벤트 시작 일정</h1>
+    <table>
+        <tr>
+            <th>영화 제목</th>
+            <th>이벤트 시작 날짜 및 시간</th>
+        </tr>
+        {% for title, datetime in movies.items() %}
+        <tr>
+            <td>{{ title }}</td>
+            <td>{{ datetime }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

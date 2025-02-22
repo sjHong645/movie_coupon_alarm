@@ -19,11 +19,11 @@ class LotteCinema(MovieTitleAndStartDate) :
     chrome_options.add_experimental_option("mobileEmulation", mobile_emulation)
 
     driver = webdriver.Chrome(options=chrome_options)
-    wait = WebDriverWait(driver, 3)
+    wait = WebDriverWait(driver, 10)
         
     def __init__(self, url, site) : 
 
-        super().__init__(url, site)
+        super().__init__(site)
         
         self.driver.get(url); time.sleep(3)
 
@@ -46,9 +46,9 @@ class LotteCinema(MovieTitleAndStartDate) :
         try:
             # 주어진 클래스에서 요소를 찾기
             info_elements = self.wait.until(
-                EC.presence_of_all_elements_located((By.CSS_SELECTOR, 'span.info_top.type1 span'))
+                EC.presence_of_all_elements_located((By.CSS_SELECTOR, 'span.info_top.type2 span.roboto'))
             )
-
+            
             # 찾은 요소들의 텍스트값 읽어오기
             texts = [element.text for element in info_elements]
             full_text = ' '.join(texts)
@@ -140,7 +140,7 @@ class MegaBox(MovieTitleAndStartDate) :
 
     def __init__(self, url, site) : 
 
-        super().__init__(url, site)
+        super().__init__(site)
         
         self.driver.get(url); time.sleep(3)
 
@@ -155,7 +155,7 @@ class MegaBox(MovieTitleAndStartDate) :
 
         titles = self.event_list.find_elements(By.CLASS_NAME, 'tit')
 
-        return [(title.text).split(']')[0].strip('[') for title in titles]
+        return [title for title in titles]
 
     def _read_start_date(self):
         
@@ -169,13 +169,22 @@ class MegaBox(MovieTitleAndStartDate) :
 
         start_dates = self._read_start_date()
 
-        return dict(zip(movie_titles, start_dates))
+        _dict = dict(zip(movie_titles, start_dates))
+
+        result = {e.text.split(']')[0].strip('[') : _dict.get(e) for e in _dict if '빵원티켓' in e.text}
+
+        return result
                 
 if __name__ == "__main__" :
     lottecinma = LotteCinema(url = "https://www.lottecinema.co.kr/NLCMW/Event/EventTemplateSpeedMulti?eventId=201210016922014", 
                              site = "LotteCinema")
-    
+
     print(lottecinma.main())
+
+    # megabox = MegaBox(url = "https://megabox.co.kr/event/movie", 
+    #                   site = "MegaBox")
+    
+    # print(megabox.main())
     
     
     
