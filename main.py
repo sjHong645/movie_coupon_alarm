@@ -3,20 +3,12 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from pathlib import Path
 
-app = FastAPI()
+from database import SessionLocal
+from sqlalchemy import text
 
-# 영화 데이터 
-movies = {
-    '퇴마록': '02-11 14시',
-    '그 시절, 우리가 좋아했던 소녀': '02-12 11시',
-    '고백': '02-17 11시',
-    '패딩턴: 페루에 가다!': '02-24 16시',
-    '써니데이': '02-17 16시',
-    '데드데드 데몬즈 디디디디 디스트럭션: 파트2': '02-21 11시',
-    '[15주년]500일의 썸머': '02-21 14시',
-    '괜찮아 괜찮아 괜찮아!': '02-24 11시',
-    '캔터빌의 유령': '02-24 14시'
-}
+session = SessionLocal()
+
+app = FastAPI()
 
 # 현재 디렉토리의 templates 폴더를 참조하도록 설정
 BASE_DIR = Path(__file__).resolve().parent
@@ -24,6 +16,15 @@ templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 @app.get("/", response_class=HTMLResponse)
 async def read_item(request: Request):
+
+    # DB에 저장된 내용을 가져온다.
+    result = session.execute(text("SELECT * FROM lottecinema_event_list")).fetchall()
+
+    movies = {} 
+    for movie in result :
+        movies[movie[0]] = movie[1].strftime("%m-%d %H시")
+
+
     return templates.TemplateResponse("index.html", {"request": request, "movies" : movies})
 
 if __name__ == "__main__":

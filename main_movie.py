@@ -4,9 +4,16 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+from datetime import datetime
+
 import time, traceback, re
 
 from compositions import MovieTitleAndStartDate
+from database import SessionLocal
+
+from sqlalchemy import text
+
+session = SessionLocal()
 
 class LotteCinema(MovieTitleAndStartDate) : 
 
@@ -93,6 +100,29 @@ class LotteCinema(MovieTitleAndStartDate) :
             self.driver.execute_script("arguments[0].click();", next_button)
         except Exception as e:
             raise Exception("버튼 클릭 오류:", e)
+        
+    def insert_into_db(self, data_dict : dict) : 
+
+        # 예시 입력 자료
+        # {'퇴마록': '02-11 14시', '그 시절, 우리가 좋아했던 소녀': '02-12 11시', 
+        # '고백': '02-17 11시', '패딩턴: 페루에 가다!': '02-24 16시', 
+        # '써니데이': '02-17 16시', '데드데드 데몬즈 디디디디 디스트럭션: 파트2': '02-21 11시', 
+        # '[15주년]500일의 썸머': '02-21 14시', '괜찮아 괜찮아 괜찮아!': '02-24 11시', '캔터빌의 유령': '02-24 14시'}
+
+        update_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        for title, start_date in data_dict.items() :
+
+            # start_date를 datetime 형식으로 변환
+            start_date = datetime.strptime(start_date, "%m-%d %H시")
+
+            # DB에 저장
+            session.execute(text(f"INSERT INTO lottecinema_event_list (movie_title, start_timestamp, update_timestamp) VALUES ('{title}', '{start_date}', '{update_date}') ON DUPLICATE KEY UPDATE update_timestamp = '{update_date}'"))
+            session.commit()
+
+        session.close()
+
+
             
     def main(self) :
         
@@ -128,8 +158,13 @@ class LotteCinema(MovieTitleAndStartDate) :
                 
             except Exception : 
                 break
+
+        result = dict(zip(movie_titles, start_date))
+
         
-        return dict(zip(movie_titles, start_date))
+        self.insert_into_db(result)
+        
+        return result
     
 class MegaBox(MovieTitleAndStartDate) : 
 
@@ -161,6 +196,8 @@ class MegaBox(MovieTitleAndStartDate) :
         
         dates = self.event_list.find_elements(By.CLASS_NAME, 'date')
 
+        print([(date.text) for date in dates])
+
         return [(date.text).split('~')[0].strip() for date in dates]
 
     def main(self) -> dict : 
@@ -171,6 +208,7 @@ class MegaBox(MovieTitleAndStartDate) :
 
         _dict = dict(zip(movie_titles, start_dates))
 
+        # 모든 이벤트 목록의 제목 중에서 "빵원티켓"이라는 문자열을 포함한 
         result = {e.text.split(']')[0].strip('[') : _dict.get(e) for e in _dict if '빵원티켓' in e.text}
 
         return result

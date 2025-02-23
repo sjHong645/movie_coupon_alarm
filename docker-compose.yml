@@ -1,0 +1,14 @@
+services :   
+  mysql : 
+    image :  mysql:latest
+    container_name :  mysql 
+    restart :  always 
+    environment : 
+      MYSQL_ROOT_PASSWORD : root
+      MYSQL_DATABASE : movie_event
+      MYSQL_USER :  movie 
+      MYSQL_PASSWORD :  hong1234
+    ports : 
+      -  "3308:3306" 
+    volumes : 
+      -  ./db/mysql_data_storage:/var/lib/mysql 
